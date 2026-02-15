@@ -36,3 +36,100 @@ a:hover {
 .logo-shadow {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 }
+
+.blog-content {
+  color: #1f2937;
+  line-height: 1.75;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4 {
+  color: #111827;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.blog-content h1 {
+  font-size: 2rem;
+}
+
+.blog-content h2 {
+  font-size: 1.5rem;
+}
+
+.blog-content h3 {
+  font-size: 1.25rem;
+}
+
+.blog-content p,
+.blog-content ul,
+.blog-content ol,
+.blog-content pre,
+.blog-content blockquote {
+  margin-top: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.blog-content ul,
+.blog-content ol {
+  padding-left: 1.25rem;
+}
+
+.blog-content li {
+  margin-top: 0.25rem;
+}
+
+.blog-content a {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+.blog-content pre {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0.9rem;
+}
+
+.blog-content code {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.blog-content :not(pre) > code {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.3rem;
+}
+
+.blog-content-dark {
+  color: #dbe5f3;
+}
+
+.blog-content-dark h1,
+.blog-content-dark h2,
+.blog-content-dark h3,
+.blog-content-dark h4 {
+  color: #f8fafc;
+}
+
+.blog-content-dark a {
+  color: #a5b4fc;
+}
+
+.blog-content-dark pre {
+  border-color: #374151;
+  background: #0f172a;
+}
+
+.blog-content-dark :not(pre) > code {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
