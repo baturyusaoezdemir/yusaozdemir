@@ -178,6 +178,7 @@ const TECH_ICONS = [
 
 function TechStackMarquee({ enabled }: { enabled: boolean }) {
   const [iconsReady, setIconsReady] = useState(false);
+  const [failedIcons, setFailedIcons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let active = true;
@@ -224,21 +225,28 @@ function TechStackMarquee({ enabled }: { enabled: boolean }) {
     >
       {enabled && iconsReady && (
         <Marquee
-          className="opacity-80"
+          className="opacity-100"
           speed={50}
           direction="left"
-          gradient
-          gradientWidth={200}
-          gradientColor="#ffffff"
+          autoFill
+          gradient={false}
         >
-          {TECH_ICONS.map((icon, i) => (
-            <div key={i} className="mx-6" style={{ userSelect: "none" }}>
+          {TECH_ICONS.filter((icon) => !failedIcons.has(icon)).map((icon, i) => (
+            <div key={icon} className="mx-6" style={{ userSelect: "none" }}>
               <Image
                 src={icon}
-                alt={`Tech Icon ${i}`}
+                alt={`Tech Icon ${i + 1}`}
                 width={48}
                 height={48}
                 className="h-12 w-12 object-contain filter grayscale hover:grayscale-0 transition"
+                onError={() => {
+                  setFailedIcons((prev) => {
+                    if (prev.has(icon)) return prev;
+                    const next = new Set(prev);
+                    next.add(icon);
+                    return next;
+                  });
+                }}
               />
             </div>
           ))}

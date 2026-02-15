@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   title: "Yusa Özdemir – DevOps/Platform Engineer",
   description: "DevOps · Platform Engineering · CI/CD · Cloud · IaC · Observability",
   metadataBase: new URL("https://deinedomain.tld"),
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   openGraph: {
     title: "Yusa Özdemir – Portfolio",
     description: "DevOps · Platform Engineering · CI/CD · Cloud · IaC · Observability",
