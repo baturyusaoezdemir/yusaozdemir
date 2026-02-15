@@ -2,17 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, Search } from "lucide-react";
 import { BLOG_POSTS } from "@/data/blogPosts";
 
-const card = {
+const card: Variants = {
   hidden: { opacity: 0, y: 24, scale: 0.98 },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.28, delay: i * 0.04, ease: "easeOut" },
+    transition: { duration: 0.28, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 

@@ -130,10 +130,12 @@ const FEATURED_PROJECTS: FeaturedProject[] = [
   },
 ];
 
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40, scale: 0.98 },
   animate: { opacity: 1, y: 0, scale: 1 },
-  transition: { duration: 0.32, delay, ease: "easeOut" },
+  transition: { duration: 0.32, delay, ease: EASE_OUT },
 });
 
 const TECH_ICONS = [
@@ -218,17 +220,16 @@ function TechStackMarquee({ enabled }: { enabled: boolean }) {
       className="w-full overflow-hidden"
       initial={{ opacity: 0, y: 6 }}
       animate={enabled && iconsReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
-      transition={{ duration: 0.28, ease: "easeOut" }}
+      transition={{ duration: 0.28, ease: EASE_OUT }}
     >
       {enabled && iconsReady && (
         <Marquee
+          className="opacity-80"
           speed={50}
           direction="left"
           gradient
           gradientWidth={200}
-          gradientColor={[255, 255, 255]}
-          gradientOpacity={0.8}
-          opacity={0.8}
+          gradientColor="#ffffff"
         >
           {TECH_ICONS.map((icon, i) => (
             <div key={i} className="mx-6" style={{ userSelect: "none" }}>
@@ -491,7 +492,7 @@ Viele Grüße
                     initial={{ opacity: 0, y: 8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                    transition={{ duration: 0.14, ease: "easeOut" }}
+                    transition={{ duration: 0.14, ease: EASE_OUT }}
                     className="absolute right-0 bottom-12 w-64 rounded-xl border border-gray-200 bg-white/95 backdrop-blur p-3 shadow-xl"
                   >
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -676,7 +677,7 @@ export default function PortfolioWithBlog() {
             className="mx-auto max-w-6xl px-4 pt-8"
             initial={{ opacity: 0, y: 14 }}
             animate={revealStage >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-            transition={{ duration: 0.26, ease: "easeOut" }}
+            transition={{ duration: 0.26, ease: EASE_OUT }}
           >
             <HeroCard onShare={sharePage} shareMsg={copyMsg} />
           </motion.div>
@@ -686,7 +687,7 @@ export default function PortfolioWithBlog() {
           className="py-6 max-w-6xl mx-auto px-4"
           initial={{ opacity: 0, y: 14 }}
           animate={revealStage >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-          transition={{ duration: 0.26, delay: 0.03, ease: "easeOut" }}
+          transition={{ duration: 0.26, delay: 0.03, ease: EASE_OUT }}
         >
           <motion.div
             {...fadeUp(0.05)}
@@ -716,7 +717,7 @@ export default function PortfolioWithBlog() {
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
+            transition={{ duration: 0.28, ease: EASE_OUT }}
           >
         <section id="career" className="py-8 max-w-6xl mx-auto px-4 scroll-mt-24">
           <button
