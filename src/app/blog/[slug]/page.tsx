@@ -1,8 +1,42 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 import { BLOG_POSTS } from "@/data/blogPosts";
 import { getBlogSourceBySlug, renderBlogHtml } from "@/lib/blogContent";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = BLOG_POSTS.find((entry) => entry.slug === slug);
+
+  if (!post) {
+    return {
+      title: "Artikel nicht gefunden | Blog",
+    };
+  }
+
+  return {
+    title: `${post.title} | Blog`,
+    description: post.excerpt,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.excerpt,
+      url: `/blog/${post.slug}`,
+    },
+  };
+}
+
+export function generateStaticParams() {
+  return BLOG_POSTS.map((post) => ({ slug: post.slug }));
+}
 
 export default async function BlogPostPage({
   params,

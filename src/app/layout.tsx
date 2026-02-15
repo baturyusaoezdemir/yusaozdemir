@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import GlobalNav from "@/components/GlobalNav";
 import PageTransition from "@/components/PageTransition";
+import { siteUrl } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,11 +18,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Yusa Özdemir – DevOps/Platform Engineer",
   description: "DevOps · Platform Engineering · CI/CD · Cloud · IaC · Observability",
-  metadataBase: new URL("https://deinedomain.tld"),
+  metadataBase: new URL(siteUrl),
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
+  },
+  alternates: {
+    canonical: "/",
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   openGraph: {
     title: "Yusa Özdemir – Portfolio",
