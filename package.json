@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@next/mdx": "^15.4.6",
+    "asciidoctor": "^3.0.4",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
+    "marked": "^17.0.2",
     "next": "15.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",

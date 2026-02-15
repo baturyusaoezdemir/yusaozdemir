@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Github,
   Mail,
@@ -11,13 +12,15 @@ import {
   Briefcase,
   Send,
   User,
+  ArrowRight,
+  Copy,
+  Check,
+  ExternalLink,
 } from "lucide-react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import Image from "next/image";
-import NavBar, { type Tab } from "@/components/NavBar";
 import Marquee from "react-fast-marquee";
 import TerminalEasterEgg from "@/components/TerminalEasterEgg";
-
 
 type RepoSummary = {
   description?: string;
@@ -44,6 +47,8 @@ interface FeaturedProject {
   repo: string;
   url: string;
   description?: string;
+  language?: string;
+  topics?: string[];
 }
 
 const CONFIG = {
@@ -58,7 +63,6 @@ const CONFIG = {
     linkedin: "https://linkedin.com/in/yusaoezdemir",
     email: "mail@yusaozdemir.de",
   },
-  githubUsername: "baturyusaoezdemir",
   profileImage: "/me.png",
 };
 
@@ -70,7 +74,7 @@ const CAREER: CareerStep[] = [
     logo: "/icons/bankverlag.png",
     website: "https://www.bank-verlag.de/",
     description:
-      "Tätig als Platform Engineer mit Leadfunktion: Unterstützung der Teamführung sowie Übernahme von Koordinations- und anteiligen Führungsaufgaben.\nCoaching des DevOps-Teams und Einführung moderner Technologien und Best Practices.\nProaktive Identifikation und Priorisierung von Themen rund um DevOps und Plattform-Services sowie Konzeption und Umsetzung entsprechender Maßnahmen.",
+      "Tätig als Platform Engineer mit Leadfunktion: Unterstützung der Teamführung sowie Übernahme von Koordinations- und anteiligen Führungsaufgaben.\nCoaching des DevOps-Teams und Einführung moderner Technologien und Best Practices.\nProaktive Identifikation und Priorisierung von Themen rund um DevOps und Plattform-Services sowie Konzeption und Umsetzung.",
   },
   {
     year: "OKT 2021 – JUN 2025",
@@ -129,7 +133,7 @@ const FEATURED_PROJECTS: FeaturedProject[] = [
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40, scale: 0.98 },
   animate: { opacity: 1, y: 0, scale: 1 },
-  transition: { duration: 0.6, delay, ease: "easeOut" },
+  transition: { duration: 0.32, delay, ease: "easeOut" },
 });
 
 const TECH_ICONS = [
@@ -170,44 +174,112 @@ const TECH_ICONS = [
   "/icons/aws.png",
 ];
 
-export function TechStackMarquee() {
+function TechStackMarquee({ enabled }: { enabled: boolean }) {
+  const [iconsReady, setIconsReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    let loaded = 0;
+
+    const markLoaded = () => {
+      loaded += 1;
+      if (active && loaded >= TECH_ICONS.length) {
+        setIconsReady(true);
+      }
+    };
+
+    if (typeof window === "undefined" || !enabled) return;
+
+    const preloaded: HTMLImageElement[] = [];
+    TECH_ICONS.forEach((src) => {
+      const img = new window.Image();
+      preloaded.push(img);
+      img.onload = markLoaded;
+      img.onerror = markLoaded;
+      img.src = src;
+    });
+
+    const fallback = window.setTimeout(() => {
+      if (active) setIconsReady(true);
+    }, 700);
+
+    return () => {
+      active = false;
+      window.clearTimeout(fallback);
+      preloaded.forEach((img) => {
+        img.onload = null;
+        img.onerror = null;
+      });
+    };
+  }, [enabled]);
+
   return (
-    <div className="w-full overflow-hidden">
-      <Marquee
-        speed={50}
-        direction="left"
-        gradient={true}
-        gradientWidth={200}
-        gradientColor={[255, 255, 255]}
-        gradientOpacity={0.8}
-        opacity={0.8}
-        loop={0}
-      >
-        {TECH_ICONS.map((icon, i) => (
-          <div key={i} className="mx-6" style={{ userSelect: "none" }}>
-            <Image
-              src={icon}
-              alt={`Tech Icon ${i}`}
-              width={48}
-              height={48}
-              className="h-12 w-12 object-contain filter grayscale hover:grayscale-0 transition"
-            />
-          </div>
-        ))}
-      </Marquee>
-    </div>
+    <motion.div
+      className="w-full overflow-hidden"
+      initial={{ opacity: 0, y: 6 }}
+      animate={enabled && iconsReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+    >
+      {enabled && iconsReady && (
+        <Marquee
+          speed={50}
+          direction="left"
+          gradient
+          gradientWidth={200}
+          gradientColor={[255, 255, 255]}
+          gradientOpacity={0.8}
+          opacity={0.8}
+        >
+          {TECH_ICONS.map((icon, i) => (
+            <div key={i} className="mx-6" style={{ userSelect: "none" }}>
+              <Image
+                src={icon}
+                alt={`Tech Icon ${i}`}
+                width={48}
+                height={48}
+                className="h-12 w-12 object-contain filter grayscale hover:grayscale-0 transition"
+              />
+            </div>
+          ))}
+        </Marquee>
+      )}
+    </motion.div>
   );
 }
 
-export function HeroCard({
+function HeroCard({
   onShare,
   shareMsg,
 }: {
   onShare: () => void;
   shareMsg?: string;
 }) {
+  const PROJECT_MAIL_SUBJECT = "[Projektanfrage] Portfolio Kontakt";
+  const PROJECT_MAIL_BODY = `Hallo Yusa,
+
+ich möchte eine Projektanfrage stellen.
+
+Firma/Name:
+Projektname:
+Projektziel:
+Technologie-Stack:
+Startzeitpunkt:
+Laufzeit:
+Budgetrahmen:
+
+Rückfragen/Details:
+
+Viele Grüße
+`;
+  const projectMailtoHref = `mailto:${CONFIG.socials.email}?subject=${encodeURIComponent(
+    PROJECT_MAIL_SUBJECT
+  )}&body=${encodeURIComponent(PROJECT_MAIL_BODY)}`;
+
   const [showAbout, setShowAbout] = useState(false);
   const [disableDrag, setDisableDrag] = useState(false);
+  const [showProjectContact, setShowProjectContact] = useState(false);
+  const [contactMsg, setContactMsg] = useState("");
+  const projectContactRef = useRef<HTMLDivElement | null>(null);
   const tiltX = useMotionValue(0);
   const tiltY = useMotionValue(0);
   const tiltXSpring = useSpring(tiltX, { stiffness: 220, damping: 20 });
@@ -224,6 +296,47 @@ export function HeroCard({
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
+
+  useEffect(() => {
+    if (!showProjectContact) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (projectContactRef.current && target && !projectContactRef.current.contains(target)) {
+        setShowProjectContact(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowProjectContact(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showProjectContact]);
+
+  const copyContactMail = async () => {
+    try {
+      await navigator.clipboard.writeText(CONFIG.socials.email);
+      setContactMsg("E-Mail kopiert");
+    } catch {
+      const input = document.createElement("input");
+      input.value = CONFIG.socials.email;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setContactMsg("E-Mail kopiert");
+    }
+    window.setTimeout(() => setContactMsg(""), 2000);
+  };
 
   return (
     <div className="w-full" style={{ perspective: 1000 }}>
@@ -268,151 +381,191 @@ export function HeroCard({
             tiltY.set(0);
           }}
         >
-        {/* Vorderseite */}
-        <div
-          className="relative inset-0 w-full h-full rounded-3xl bg-white 
-                    p-8 pb-20 shadow-xl border border-gray-200/50 select-none"
-          style={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden"
-          }}
-        >
+          <div
+            className="relative inset-0 w-full h-full rounded-3xl bg-white p-8 pb-20 shadow-xl border border-gray-200/50 select-none"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
+          >
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6 pt-5 text-center sm:text-left">
+              <div className="relative w-28 h-28 rounded-full overflow-hidden ring-4 ring-indigo-200 shadow-lg flex-shrink-0">
+                <Image
+                  src={CONFIG.profileImage}
+                  alt={`${CONFIG.name} Profilfoto`}
+                  fill
+                  sizes="112px"
+                  priority
+                  className="object-cover select-none"
+                  draggable={false}
+                />
+              </div>
 
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6 pt-5 text-center sm:text-left">
-            <div className="relative w-28 h-28 rounded-full overflow-hidden ring-4 ring-indigo-200 shadow-lg flex-shrink-0">
-              <Image
-                src={CONFIG.profileImage}
-                alt={`${CONFIG.name} Profilfoto`}
-                fill
-                sizes="112px"
-                priority
-                className="object-cover select-none"
-                draggable={false}
-              />
+              <div>
+                <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-indigo-500 to-emerald-500 bg-clip-text text-transparent leading-tight">
+                  {CONFIG.name}
+                </h1>
+
+                <p className="mt-1 text-lg sm:text-xl text-gray-700">{CONFIG.role}</p>
+                <p className="mt-1 text-lg sm:text-xl text-gray-700">{CONFIG.certificates}</p>
+              </div>
             </div>
 
-            <div>
-              <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-indigo-500 to-emerald-500 bg-clip-text text-transparent leading-tight">
-                {CONFIG.name}
-              </h1>
+            <p className="text-lg text-gray-600 mb-4 sm:pl-[136px]">{CONFIG.tagline}</p>
+            <span className="flex items-center gap-1 text-sm text-gray-600 sm:pl-[136px]">
+              <MapPin className="h-4 w-4" /> {CONFIG.location}
+            </span>
 
-              <p className="mt-1 text-lg sm:text-xl text-gray-700">{CONFIG.role}</p>
-              <p className="mt-1 text-lg sm:text-xl text-gray-700">{CONFIG.certificates}</p>
+            <div className="flex flex-wrap gap-2 mt-6 sm:justify-start items-center sm:pl-[136px]">
+              <a
+                href={CONFIG.socials.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-800 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
+                aria-label="GitHub"
+                title="GitHub"
+              >
+                <span className="h-8 w-8 rounded-lg bg-gray-900 text-white grid place-items-center shadow-sm">
+                  <Github className="h-4 w-4" />
+                </span>
+              </a>
+
+              <a
+                href={CONFIG.socials.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-800 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+              >
+                <span className="h-8 w-8 rounded-lg bg-sky-600 text-white grid place-items-center shadow-sm">
+                  <Linkedin className="h-4 w-4" />
+                </span>
+              </a>
+
+              <a
+                href={`mailto:${CONFIG.socials.email}`}
+                className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-800 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
+                aria-label="E-Mail"
+                title="E-Mail"
+              >
+                <span className="h-8 w-8 rounded-lg bg-emerald-500 text-white grid place-items-center shadow-sm">
+                  <Mail className="h-4 w-4" />
+                </span>
+              </a>
+              <button
+                onClick={onShare}
+                className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-700 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
+                aria-label="Seite teilen"
+                title="Seite teilen"
+              >
+                <span className="h-8 w-8 rounded-lg bg-indigo-600 text-white grid place-items-center shadow-sm">
+                  <Send className="h-4 w-4" />
+                </span>
+              </button>
+              {shareMsg && <span className="text-xs text-emerald-600 ml-1">{shareMsg}</span>}
             </div>
-          </div>
 
-          <p className="text-lg text-gray-600 mb-4 sm:pl-[136px]">
-            {CONFIG.tagline}
-          </p>
-          <span className="flex items-center gap-1 text-sm text-gray-600 sm:pl-[136px]">
-            <MapPin className="h-4 w-4" /> {CONFIG.location}
-          </span>
-
-          <div className="flex flex-wrap gap-2 mt-6 sm:justify-start items-center sm:pl-[136px]">
-            <a
-              href={CONFIG.socials.github}
-              target="_blank"
-              className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-800 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
-              aria-label="GitHub"
-              title="GitHub"
-            >
-              <span className="h-8 w-8 rounded-lg bg-gray-900 text-white grid place-items-center shadow-sm">
-                <Github className="h-4 w-4" />
-              </span>
-            </a>
-
-            <a
-              href={CONFIG.socials.linkedin}
-              target="_blank"
-              className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-800 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
-              aria-label="LinkedIn"
-              title="LinkedIn"
-            >
-              <span className="h-8 w-8 rounded-lg bg-sky-600 text-white grid place-items-center shadow-sm">
-                <Linkedin className="h-4 w-4" />
-              </span>
-            </a>
-
-            <a
-              href={`mailto:${CONFIG.socials.email}`}
-              target="_blank"
-              className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-800 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
-              aria-label="E-Mail"
-              title="E-Mail"
-            >
-              <span className="h-8 w-8 rounded-lg bg-emerald-500 text-white grid place-items-center shadow-sm">
-                <Mail className="h-4 w-4" />
-              </span>
-            </a>
             <button
-              onClick={onShare}
-              className="group h-10 w-10 rounded-xl grid place-items-center border border-gray-200/80 bg-white/90 text-gray-700 shadow-sm transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-300"
-              aria-label="Seite teilen"
-              title="Seite teilen"
+              onClick={() => setShowAbout(true)}
+              className="absolute bottom-6 left-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 bg-[length:200%_100%] text-white text-sm font-semibold shadow-lg transition-[background-position,box-shadow] duration-300 ease-out hover:shadow-xl hover:bg-[position:100%_0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
             >
-              <span className="h-8 w-8 rounded-lg bg-indigo-600 text-white grid place-items-center shadow-sm">
-                <Send className="h-4 w-4" />
-              </span>
+              Über mich
+              <span className="text-base">→</span>
             </button>
-            {shareMsg && (
-              <span className="text-xs text-emerald-600 ml-1">
-                {shareMsg}
-              </span>
-            )}
+            <div ref={projectContactRef} className="absolute bottom-6 right-6">
+              <button
+                onClick={() => setShowProjectContact((v) => !v)}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-gray-800 text-sm font-semibold shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 active:scale-[0.98] ${
+                  showProjectContact
+                    ? "border-indigo-300 bg-indigo-50/90 shadow-lg"
+                    : "border-gray-300 bg-white/95 hover:bg-gray-50"
+                }`}
+              >
+                <Briefcase className="h-4 w-4" />
+                Projektanfrage
+              </button>
+              <AnimatePresence>
+                {showProjectContact && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                    transition={{ duration: 0.14, ease: "easeOut" }}
+                    className="absolute right-0 bottom-12 w-64 rounded-xl border border-gray-200 bg-white/95 backdrop-blur p-3 shadow-xl"
+                  >
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      Kontakt
+                    </p>
+                    <div className="mt-2 grid gap-2">
+                      <a
+                        href={projectMailtoHref}
+                        className="inline-flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                      >
+                        Mail
+                        <Mail className="h-4 w-4" />
+                      </a>
+                      <button
+                        onClick={copyContactMail}
+                        className="inline-flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                      >
+                        E-Mail kopieren
+                        {contactMsg ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                      </button>
+                      <a
+                        href={CONFIG.socials.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                      >
+                        LinkedIn Nachricht
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
-          <button
-            onClick={() => setShowAbout(true)}
-            className="absolute bottom-6 left-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 bg-[length:200%_100%] text-white text-sm font-semibold shadow-lg transition-[background-position,box-shadow] duration-300 ease-out hover:shadow-xl hover:bg-[position:100%_0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+          <div
+            className="absolute inset-0 w-full h-full rounded-3xl bg-white p-8 pb-20 shadow-xl border border-gray-200/50 select-none"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+            }}
           >
-            Über mich
-            <span className="text-base">→</span>
-          </button>
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
+              <User className="h-6 w-6 text-indigo-500" />
+              Über mich
+            </h2>
 
-        </div>
-
-        {/* Rückseite */}
-        <div
-          className="absolute inset-0 w-full h-full rounded-3xl bg-white 
-                    p-8 pb-20 shadow-xl border border-gray-200/50 select-none"
-          style={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            transform: "rotateY(180deg)"
-          }}
-        >
-
-          <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-            <User className="h-6 w-6 text-indigo-500" />
-            Über mich
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6 items-center">
-            <div className="relative w-full h-48 rounded-xl overflow-hidden shadow-md ring-1 ring-indigo-200">
-              <Image
-                src="/me2.jpg"
-                alt="Portrait"
-                fill
-                className="object-cover select-none"
-                draggable={false}
-              />
+            <div className="grid md:grid-cols-2 gap-6 items-center">
+              <div className="relative w-full h-48 rounded-xl overflow-hidden shadow-md ring-1 ring-indigo-200">
+                <Image
+                  src="/me2.jpg"
+                  alt="Portrait"
+                  fill
+                  className="object-cover select-none"
+                  draggable={false}
+                />
+              </div>
+              <div className="text-gray-700 leading-relaxed space-y-3 text-sm">
+                <p>Hi, ich bin Yusa - Platform- und DevOps-Engineer mit Fokus auf robuste, skalierbare Systeme.</p>
+                <p>Ich optimiere Plattformen, automatisiere Prozesse und schaffe klare Strukturen, damit Teams effizient liefern können.</p>
+                <p>Mein Anspruch: Lösungen, die nicht nur laufen, sondern messbar verbessern - zuverlässig, wartbar und nachhaltig.</p>
+              </div>
             </div>
-            <div className="text-gray-700 leading-relaxed space-y-3 text-sm">
-              <p>Hi, ich bin Yusa – Platform- und DevOps-Engineer mit Fokus auf robuste, skalierbare Systeme.</p>
-              <p>Ich optimiere Plattformen, automatisiere Prozesse und schaffe klare Strukturen, damit Teams effizient liefern können.</p>
-              <p>Mein Anspruch: Lösungen, die nicht nur laufen, sondern messbar verbessern – zuverlässig, wartbar und nachhaltig.</p>
-            </div>
+
+            <button
+              onClick={() => setShowAbout(false)}
+              className="absolute bottom-6 left-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 bg-[length:200%_100%] text-white text-sm font-semibold shadow-lg transition-[background-position,box-shadow] duration-300 ease-out hover:shadow-xl hover:bg-[position:100%_0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+            >
+              <span className="text-base">←</span>
+              Zurück
+            </button>
           </div>
-
-          <button
-            onClick={() => setShowAbout(false)}
-            className="absolute bottom-6 left-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 bg-[length:200%_100%] text-white text-sm font-semibold shadow-lg transition-[background-position,box-shadow] duration-300 ease-out hover:shadow-xl hover:bg-[position:100%_0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
-          >
-            <span className="text-base">←</span>
-            Zurück
-          </button>
-
-        </div>
         </motion.div>
       </motion.div>
     </div>
@@ -423,11 +576,10 @@ export default function PortfolioWithBlog() {
   const [featuredProjects, setFeaturedProjects] = useState<FeaturedProject[]>(
     FEATURED_PROJECTS
   );
-  const [tab, setTab] = useState<Tab>("home");
   const [showTerminal, setShowTerminal] = useState(false);
   const [copyMsg, setCopyMsg] = useState("");
+  const [revealStage, setRevealStage] = useState(0);
 
-  // Shortcut aktivieren
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key.toLowerCase() === "y") {
@@ -437,6 +589,17 @@ export default function PortfolioWithBlog() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const step1 = window.setTimeout(() => setRevealStage(1), 300);
+    const step2 = window.setTimeout(() => setRevealStage(2), 560);
+    const step3 = window.setTimeout(() => setRevealStage(3), 780);
+    return () => {
+      window.clearTimeout(step1);
+      window.clearTimeout(step2);
+      window.clearTimeout(step3);
+    };
   }, []);
 
   const sharePage = async () => {
@@ -502,22 +665,59 @@ export default function PortfolioWithBlog() {
     };
   }, []);
 
-  // Scroll-Highlighting entfernt auf Wunsch
-
   return (
     <>
-      <NavBar active={tab} onChange={setTab} />
       <main className="relative min-h-screen">
         <section id="home" className="pb-8 sm:pt-30 pt-20 scroll-mt-24">
           <div className="mx-auto max-w-6xl px-4 py-1 overflow-hidden relative">
-            <TechStackMarquee />
+            <TechStackMarquee enabled={revealStage >= 1} />
           </div>
-          <div className="mx-auto max-w-6xl px-4 pt-8">
+          <motion.div
+            className="mx-auto max-w-6xl px-4 pt-8"
+            initial={{ opacity: 0, y: 14 }}
+            animate={revealStage >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+            transition={{ duration: 0.26, ease: "easeOut" }}
+          >
             <HeroCard onShare={sharePage} shareMsg={copyMsg} />
-          </div>
+          </motion.div>
         </section>
 
-        {/* Karriere */}
+        <motion.section
+          className="py-6 max-w-6xl mx-auto px-4"
+          initial={{ opacity: 0, y: 14 }}
+          animate={revealStage >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+          transition={{ duration: 0.26, delay: 0.03, ease: "easeOut" }}
+        >
+          <motion.div
+            {...fadeUp(0.05)}
+            className="rounded-3xl bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 p-[1px] shadow-xl"
+          >
+            <div className="rounded-3xl bg-white/95 p-4 sm:p-5">
+              <p className="text-xs uppercase tracking-[0.28em] text-indigo-600">
+                Neuigkeiten
+              </p>
+              <p className="mt-2 text-sm text-gray-700 max-w-4xl">
+                Bald werde ich hier regelmäßig Beiträge posten. Schaut gerne wieder rein, dort teile ich meine Gedanken und Erfahrungen.
+              </p>
+              <div className="mt-3">
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold bg-gray-900 text-white transition hover:bg-gray-800"
+                >
+                  Zum Blog
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </motion.section>
+
+        {revealStage >= 3 && (
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+          >
         <section id="career" className="py-8 max-w-6xl mx-auto px-4 scroll-mt-24">
           <button
             onClick={() => scrollToSection("career")}
@@ -540,18 +740,13 @@ export default function PortfolioWithBlog() {
                   </span>
                 )}
                 <div className="flex justify-between items-start">
-                  {/* Textbereich */}
                   <div>
                     <h3 className="text-lg font-semibold">
                       {step.role} @{step.company}
-                      
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      {step.year}
-                    </p>
+                    <p className="text-sm text-gray-500">{step.year}</p>
                   </div>
 
-                  {/* Logo rechts */}
                   {step.logo && (
                     <a
                       href={step.website}
@@ -560,12 +755,7 @@ export default function PortfolioWithBlog() {
                       className="transition-transform hover:scale-105"
                       style={{ minHeight: "40px" }}
                     >
-                      <Image
-                        src={step.logo}
-                        alt={`${step.company} Logo`}
-                        width={80}
-                        height={40}
-                      />
+                      <Image src={step.logo} alt={`${step.company} Logo`} width={80} height={40} />
                     </a>
                   )}
                 </div>
@@ -578,7 +768,6 @@ export default function PortfolioWithBlog() {
           </div>
         </section>
 
-        {/* Zertifizierungen */}
         <section id="certifications" className="py-8 max-w-6xl mx-auto px-4 scroll-mt-24">
           <button
             onClick={() => scrollToSection("certifications")}
@@ -597,18 +786,13 @@ export default function PortfolioWithBlog() {
                 rel="noopener noreferrer"
                 className="block rounded-2xl bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-xl p-6 shadow-xl transition-all duration-300 ease-out hover:shadow-2xl hover:scale-[1.02] border border-gray-200/70"
               >
-                <h3 className="font-semibold leading-snug text-lg">
-                  {cert.name}
-                </h3>
-                <p className="text-sm text-gray-600 mt-2">
-                  Zertifikat ansehen →
-                </p>
+                <h3 className="font-semibold leading-snug text-lg">{cert.name}</h3>
+                <p className="text-sm text-gray-600 mt-2">Zertifikat ansehen →</p>
               </motion.a>
             ))}
           </div>
         </section>
 
-        {/* Projekte */}
         <section id="projects" className="py-8 max-w-6xl mx-auto px-4 scroll-mt-24">
           <button
             onClick={() => scrollToSection("projects")}
@@ -619,49 +803,48 @@ export default function PortfolioWithBlog() {
           </button>
 
           <div className="mb-10">
-            <p className="text-sm text-gray-600 mb-4">
-              Ausgewählte Projekte
-            </p>
+            <p className="text-sm text-gray-600 mb-4">Ausgewählte Projekte</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProjects.map((project) => (
-              <motion.a
-                key={project.url}
-                {...fadeUp(0.05)}
-                href={project.url}
-                target="_blank"
+              {featuredProjects.map((project) => (
+                <motion.a
+                  key={project.url}
+                  {...fadeUp(0.05)}
+                  href={project.url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="block rounded-2xl bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-xl p-6 shadow-xl transition-all duration-300 ease-out hover:shadow-2xl hover:scale-[1.02] border border-gray-200/70"
                 >
-                <h3 className="font-semibold line-clamp-1 text-lg">
-                  {project.name}
-                </h3>
-                <p className="text-sm text-gray-700 mt-2 line-clamp-2">
-                  {project.description || "Lade Beschreibung…"}
-                </p>
-                {(project.language || project.topics?.length) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {project.language && (
-                      <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-white/80 border border-gray-200/70 rounded-full px-2 py-1">
-                        <span className="h-2 w-2 rounded-full bg-gray-400" />
-                        {project.language}
-                      </span>
-                    )}
-                    {project.topics?.map((topic) => (
-                      <span
-                        key={topic}
-                        className="inline-flex items-center text-xs text-gray-600 bg-white/80 border border-gray-200/70 rounded-full px-2 py-1"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <p className="text-xs text-gray-500 mt-3">GitHub →</p>
-              </motion.a>
-            ))}
+                  <h3 className="font-semibold line-clamp-1 text-lg">{project.name}</h3>
+                  <p className="text-sm text-gray-700 mt-2 line-clamp-2">
+                    {project.description || "Lade Beschreibung…"}
+                  </p>
+                  {(project.language || project.topics?.length) && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {project.language && (
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-white/80 border border-gray-200/70 rounded-full px-2 py-1">
+                          <span className="h-2 w-2 rounded-full bg-gray-400" />
+                          {project.language}
+                        </span>
+                      )}
+                      {project.topics?.map((topic) => (
+                        <span
+                          key={topic}
+                          className="inline-flex items-center text-xs text-gray-600 bg-white/80 border border-gray-200/70 rounded-full px-2 py-1"
+                        >
+                          {topic}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-3">GitHub →</p>
+                </motion.a>
+              ))}
+            </div>
           </div>
-        </div>
         </section>
+          </motion.div>
+        )}
+
         <TerminalEasterEgg visible={showTerminal} onClose={() => setShowTerminal(false)} />
       </main>
     </>
