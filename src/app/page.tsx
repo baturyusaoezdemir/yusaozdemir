@@ -72,7 +72,7 @@ const CAREER: CareerStep[] = [
     role: "Platform Engineer",
     company: "G+D Netcetera",
     description:
-      "Tätig als Platform Engineer mit Leadfunktion: Unterstützung der Teamführung sowie Übernahme von Koordinations- und anteiligen FÃ¼hrungsaufgaben.\nCoaching des DevOps-Teams und Einführung moderner Technologien und Best Practices.\nProaktive Identifikation und Priorisierung von Themen rund um DevOps und Plattform-Services sowie Konzeption und Umsetzung.",
+      "Durch Akquisition von Bank-Verlag GmbH zu G+D Netcetera gewechselt: Aufgaben und Verantwortlichkeiten weitestgehend unverändert.",
     website: "https://www.netcetera.com/",
     logo: "/icons/GDnetcetera.png",
   },
