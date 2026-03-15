@@ -68,7 +68,16 @@ const CONFIG = {
 
 const CAREER: CareerStep[] = [
   {
-    year: "JUL 2025 – heute",
+    year: "MAR 2026 - heute",
+    role: "Platform Engineer",
+    company: "G+D Netcetera",
+    description:
+      "Tätig als Platform Engineer mit Leadfunktion: Unterstützung der Teamführung sowie Übernahme von Koordinations- und anteiligen FÃ¼hrungsaufgaben.\nCoaching des DevOps-Teams und Einführung moderner Technologien und Best Practices.\nProaktive Identifikation und Priorisierung von Themen rund um DevOps und Plattform-Services sowie Konzeption und Umsetzung.",
+    website: "https://www.netcetera.com/",
+    logo: "/icons/GDnetcetera.png",
+  },
+  {
+    year: "JUL 2025 - MAR 2026",
     role: "Platform Engineer",
     company: "Bank-Verlag GmbH",
     logo: "/icons/bankverlag.png",
@@ -77,7 +86,7 @@ const CAREER: CareerStep[] = [
       "Tätig als Platform Engineer mit Leadfunktion: Unterstützung der Teamführung sowie Übernahme von Koordinations- und anteiligen Führungsaufgaben.\nCoaching des DevOps-Teams und Einführung moderner Technologien und Best Practices.\nProaktive Identifikation und Priorisierung von Themen rund um DevOps und Plattform-Services sowie Konzeption und Umsetzung.",
   },
   {
-    year: "OKT 2021 – JUN 2025",
+    year: "OKT 2021 - JUN 2025",
     role: "Software Engineer",
     company: "adesso SE",
     logo: "/icons/adesso.png",
@@ -86,7 +95,7 @@ const CAREER: CareerStep[] = [
       "Beratung und Mitarbeit in zahlreichen Projekten im Bereich Frontend- und Backend-Entwicklung sowie DevOps.\nAufbau und Optimierung von Containerplattformen und CI/CD-Pipelines.\nLeitung und Koordination von Entwicklerteams sowie Durchführung von Schulungen und Mentoring zur Förderung der beruflichen Entwicklung.\nKarriereweg: Werkstudent → Trainee → Software Developer → Software Engineer.",
   },
   {
-    year: "OKT 2020 – SEP 2021",
+    year: "OKT 2020 - SEP 2021",
     role: "Werkstudent",
     company: "DocCheck AG",
     logo: "/icons/doccheck.png",
@@ -699,7 +708,8 @@ export default function PortfolioWithBlog() {
                 Neuigkeiten
               </p>
               <p className="mt-2 text-sm text-gray-700 max-w-4xl">
-                Bald werde ich hier regelmäßig Beiträge posten. Schaut gerne wieder rein, dort teile ich meine Gedanken und Erfahrungen.
+                Ich bin dieses Jahr auf der KubeCon 2026 @Amsterdam. 🚀
+                <br />Falls ihr auch da seid, meldet euch gerne über LinkedIn für einen Austausch vor Ort!
               </p>
               <div className="mt-3">
                 <Link
