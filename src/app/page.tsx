@@ -121,6 +121,10 @@ const FEATURED_PROJECTS: FeaturedProject[] = [
     name: "Resource-Action-Operator",
     repo: "zdmr-space/Resource-Action-Operator",
     url: "https://github.com/zdmr-space/Resource-Action-Operator",
+    description:
+      "Kubernetes-Operator zum Überwachen von Ressourcenereignissen und Ausführen definierter Aktionen wie HTTP-Requests oder Jobs.",
+    language: "Go",
+    topics: ["kubernetes", "operator", "automation"],
   },
   {
     name: "social-imposter",

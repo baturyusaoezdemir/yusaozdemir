@@ -1,0 +1,120 @@
+= Resource Action Operator
+
+In diesem Beitrag möchte ich ein Projekt vorstellen, an dem ich in den letzten Monaten gearbeitet habe: den Resource Action Operator.
+
+Die aktuelle Version ist für mich die erste, die ich wirklich als nutzbar bezeichnen würde. Frühere Versionen waren vor allem Teil meines Lernprozesses. Die Entwicklung eines Kubernetes-Operators war für mich Neuland, und auch mit Go hatte ich vorher nur sehr wenig Erfahrung. Unterstützt durch KI konnte ich mich jedoch schnell einarbeiten und innerhalb weniger Monate meinen ersten funktionsfähigen Operator entwickeln.
+
+== Wie die Idee entstanden ist
+
+Die Idee zum Resource Action Operator entstand aus einem Gespräch mit meinem Bruder. Wir standen beide immer wieder vor der Herausforderung, bestimmte Abläufe innerhalb eines Kubernetes-Clusters zu automatisieren. Je länger wir darüber gesprochen haben, desto klarer wurde: Es wäre hilfreich, innerhalb von Kubernetes eine Art "Wächter" zu haben, der auf bestimmte Ereignisse reagiert und daraufhin definierte Aktionen ausführt, zum Beispiel das Aufrufen eines API-Endpunkts.
+
+Die Idee hat mich sofort überzeugt. Deshalb habe ich mich kurz darauf an die Umsetzung gesetzt. Das Ergebnis ist nun die erste Version, die ich veröffentlichen möchte.
+
+== Was macht der Resource Action Operator?
+
+Der Resource Action Operator überwacht Kubernetes-Ressourcen auf definierte Ereignisse und führt anschließend konfigurierte Aktionen aus.
+
+Welche Ressourcen überwacht werden sollen, lässt sich über `spec.selector` festlegen:
+
+[source,yaml]
+----
+apiVersion: ops.yusaozdemir.de/v1alpha1
+kind: ResourceAction
+...
+spec:
+  selector:
+    group: ""
+    version: v1
+    kind: Node
+----
+
+Über `spec.events` wird definiert, auf welche Ereignisse reagiert werden soll:
+
+[source,yaml]
+----
+spec:
+  events:
+    - Update
+----
+
+Mit `spec.filters` lassen sich zusätzliche Filter setzen, zum Beispiel auf Labels:
+
+[source,yaml]
+----
+spec:
+  filters:
+    labels:
+      demo.resource-action-operator/enables: "true"
+----
+
+Anschließend kann über `spec.actions` festgelegt werden, welche Aktion ausgeführt werden soll:
+
+[source,yaml]
+----
+spec:
+  actions:
+    - type: http
+      mode: once
+      method: POST
+      url: <API-ENDPUNKT>
+      expectedStatus: "^2..$"
+      timeout: 10s
+      body:
+        template: |
+          {
+            "channel": "node-http",
+            "node": "{{ .metadata.name }}",
+            "labels": {{ .metadata.labels | toJson }}
+          }
+----
+
+In diesem Beispiel könnten Nodes überwacht werden. Sobald eine Node das entsprechende Label erhält, wird die HTTP-Action ausgeführt.
+
+== Berechtigungen
+
+Wichtig ist dabei: Der Operator kann nur Ressourcen überwachen und Aktionen ausführen, wenn die entsprechenden Berechtigungen vorhanden sind. Diese können beispielsweise so aussehen:
+
+[source,yaml]
+----
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: <NAMESPACE>
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: <NAMESPACE>
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: <NAMESPACE>
+subjects:
+  - kind: ServiceAccount
+    name: resource-action-operator-controller-manager
+    namespace: resource-action-operator-system
+----
+
+== Weitere Beispiele und Quickstart
+
+Im GitHub-Projekt finden sich unter `examples/...` weitere Beispiele. Dort ist unter anderem zu sehen, wie Jobs erstellt werden können, wie sich Custom Actions definieren lassen und wie auch andere Ressourcen überwacht werden können.
+
+Da die Ersteinrichtung anfangs etwas aufwendig sein kann, habe ich unter `docs/modules/ROOT/pages/quickstart.adoc` außerdem eine ausführliche Quickstart-Anleitung geschrieben. Darin beschreibe ich, wie der Operator installiert wird und wie sich eine erste `ResourceAction` anlegen lässt. Antora ist dafür aktuell noch nicht vollständig aufgesetzt, deshalb ist die Seite derzeit noch nicht über einen öffentlichen Link erreichbar.
+
+Das Repository ist hier zu finden: https://github.com/zdmr-space/Resource-Action-Operator
+
+== Hinweis zum aktuellen Stand
+
+Der Operator befindet sich aktuell noch in der Alpha-Phase. Das bedeutet, dass es noch zu Fehlern kommen kann und auch einige Funktionen noch fehlen oder verbessert werden sollten. Ich werde das Projekt Schritt für Schritt weiterentwickeln.
+
+Ich freue mich über Feedback, Verbesserungsvorschläge und natürlich auch über Beiträge zum Projekt.
